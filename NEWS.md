@@ -1,4 +1,14 @@
-# BioticExplorerServer 0.8.4 (development version)
+# BioticExplorerServer 0.8.5 (development version)
+
+*2026-08-23*
+
+- Added `gearcondition` to the default `codeindex` reference tables. `samplequality` remains
+  included; both central survey-quality fields are now refreshed by `compileDatabase()` and
+  `updateDatabase()`.
+- Excluded deprecated Reference API rows before reducing code tables to their offline
+  code-to-meaning mappings.
+
+# BioticExplorerServer 0.8.4
 
 *2026-08-04*
 

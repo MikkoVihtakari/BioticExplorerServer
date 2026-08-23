@@ -2,7 +2,7 @@
 #' @description Downloads and compiles the simple (non-composite) coded-field reference
 #'   tables from the IMR NMD Reference API into a single long-format lookup. These are the
 #'   Biotic columns flagged as codes of type \code{KeyType} (e.g. \code{sex},
-#'   \code{maturationstage}, \code{nation}) whose meaning is otherwise
+#'   \code{maturationstage}, \code{samplequality}, \code{gearcondition}) whose meaning is otherwise
 #'   only resolvable against the API. The result is written to the DuckDB database as the
 #'   \code{codeindex} table by \code{\link{compileDatabase}}, so agents and the Shiny app can
 #'   decode these fields offline with a join instead of a per-code network call.
@@ -16,7 +16,7 @@
 #'   \code{"no"}.
 #' @details Reads each table from \code{.../reference/v2/dataset/\{table\}} (the same endpoint
 #'   family used by \code{\link{prepareGearList}}) and keeps only the \code{code -> meaning}
-#'   mapping. Editor-identity columns from the registry (\code{updatedBy}, \code{insertedBy},
+#'   mapping. Deprecated reference rows are excluded. Editor-identity columns from the registry (\code{updatedBy}, \code{insertedBy},
 #'   timestamps, \code{...By} fields) are dropped on purpose so no staff usernames land in the
 #'   database. Tables that fail to download (e.g. off the IMR network) are skipped with a
 #'   warning rather than aborting the build. Composite reference tables that are keyed by taxa
@@ -36,7 +36,7 @@ prepareReferenceCodes <- function(tables = NULL, lang = c("en", "no")) {
   if (is.null(tables)) {
     tables <- c(
       "sex", "maturationstage", "nation",
-      "samplequality", "haulvalidity", "sampletype",
+      "samplequality", "gearcondition", "haulvalidity", "sampletype",
       "agingstructure", "lengthmeasurement", "lengthresolution", "fat",
       "digestion", "liver", "identification", "abundancecategory",
       "stationtype", "samplerecipient"
@@ -61,7 +61,11 @@ prepareReferenceCodes <- function(tables = NULL, lang = c("en", "no")) {
       return(NULL)
     }
 
-    rows <- lapply(xml2::xml_find_all(doc, "//d1:row"), function(x) {
+    row_nodes <- xml2::xml_find_all(doc, "//d1:row")
+    deprecated <- tolower(trimws(xml2::xml_attr(row_nodes, "deprecated")))
+    row_nodes <- row_nodes[is.na(deprecated) | deprecated %in% c("", "false", "0", "no")]
+
+    rows <- lapply(row_nodes, function(x) {
       ch <- xml2::xml_children(x)
       y <- xml2::xml_text(ch)
       names(y) <- xml2::xml_name(ch)

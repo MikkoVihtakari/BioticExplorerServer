@@ -1,8 +1,8 @@
 Package: BioticExplorerServer
 Type: Package
 Title: R Package for Downloading Server-Side Data for BioticExplorer
-Version: 0.8.5
-Date: 2026-08-23
+Version: 0.8.6
+Date: 2026-08-31
 Authors@R: c(person("Mikko", "Vihtakari", email = "mikko.vihtakari@hi.no",
                   role = c("aut", "cre")), 
           person("Ibrahim", "Umar",

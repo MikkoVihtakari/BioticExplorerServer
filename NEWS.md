@@ -1,4 +1,16 @@
-# BioticExplorerServer 0.8.5 (development version)
+# BioticExplorerServer 0.8.6 (development version)
+
+*2026-08-31*
+
+- Fixed `prepareTaxaList()` aborting with "argument is not a matrix" when the Reference API
+  serves a taxa record with an empty `tsn` element ([#6](https://github.com/DeepWaterIMR/BioticExplorerServer/issues/6),
+  [#7](https://github.com/DeepWaterIMR/BioticExplorerServer/issues/7)). Such records are now
+  skipped, with a warning when they carry taxa names, instead of halting `updateDatabase()`
+  and `compileDatabase()` before any survey data are processed.
+- Rewrote the taxa document parser to use vectorized `xml2` calls, making `prepareTaxaList()`
+  about ten times faster and tolerant of empty or missing elements.
+
+# BioticExplorerServer 0.8.5
 
 *2026-08-23*
 

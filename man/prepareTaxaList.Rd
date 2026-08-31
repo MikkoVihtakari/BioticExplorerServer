@@ -10,10 +10,13 @@ prepareTaxaList(verbose = FALSE)
 \item{verbose}{Logical indicating whether the function should print progress messages.}
 }
 \value{
-A \code{\link[data.table]{data.table}} with columns \code{tsn} and \code{name} (plus additional synonym columns where available). Rows where \code{name} is \code{NA} are excluded.
+A \code{\link[data.table]{data.table}} with columns \code{tsn} and \code{name} (plus additional synonym columns where available). Rows where \code{name} or \code{tsn} is missing are excluded.
 }
 \description{
 Downloads and compiles the taxa reference list from the IMR API. The result can be bundled as package data. Run this function and save with \code{usethis::use_data(taxaList, overwrite = TRUE)} to refresh the bundled data.
+}
+\details{
+Records served by the Reference API occasionally lack a \code{tsn} or contain empty elements. Such records cannot be linked to Biotic data and are dropped with a warning instead of aborting the compilation.
 }
 \author{
 Mikko Vihtakari, Ibrahim Umar

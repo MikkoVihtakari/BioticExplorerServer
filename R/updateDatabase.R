@@ -804,7 +804,7 @@
 #' @export
 updateDatabase <- function(
   years = NULL,
-  dbPath = "~/IMR_biotic_BES_database",
+  dbPath = defaultDbPath(),
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
   verbose = FALSE,

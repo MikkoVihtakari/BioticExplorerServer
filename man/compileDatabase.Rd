@@ -6,7 +6,7 @@
 \usage{
 compileDatabase(
   years = 1900:data.table::year(Sys.time()),
-  dbPath = "~/IMR_biotic_BES_database",
+  dbPath = defaultDbPath(),
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
   overwrite = FALSE
@@ -15,9 +15,9 @@ compileDatabase(
 \arguments{
 \item{years}{Vector of integers specifying the years to be downloaded. The database reaches 1914:year(Sys.Date())}
 
-\item{dbPath}{Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved.}
+\item{dbPath}{Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved. Defaults to \code{\link{defaultDbPath}()}, which is \code{~/IMR_biotic_BES_database} on macOS and Linux and \code{\%USERPROFILE\%\\IMR_biotic_BES_database} on Windows, where R's \code{~} expansion may otherwise land the database in a OneDrive-synchronized Documents folder.}
 
-\item{dbIndexFile}{Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.}
+\item{dbIndexFile}{Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. Defaults to \code{dbIndex.rda} inside \code{dbPath}. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.}
 
 \item{dbName}{Character string or \code{NULL}. If \code{NULL} uses the default name ("bioticexplorer").}
 

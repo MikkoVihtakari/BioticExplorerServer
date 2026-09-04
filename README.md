@@ -50,8 +50,10 @@ it left off.
 
 ``` r
 library(BioticExplorerServer)
-compileDatabase(dbPath = "~/IMR_biotic_BES_database") # default dbPath, written out to show it
+compileDatabase() # writes to defaultDbPath(); pass dbPath to choose another folder
 ```
+
+**Where the database goes.** The default `dbPath` is `~/IMR_biotic_BES_database` on macOS and Linux. On Windows R expands `~` through the Documents special folder, which OneDrive's Known Folder Move often redirects into a synchronized `OneDrive - <Organization>\Documents` folder — the last place a multi-gigabyte database should live. Since version 0.8.7 the default therefore resolves to `%USERPROFILE%\IMR_biotic_BES_database` on Windows, matching the convention documented by [BAIT](https://github.com/DeepWaterIMR/BAIT). Call `defaultDbPath()` to see the resolved path, and `findDatabase()` to locate a database that an earlier version installed under Documents.
 
 ### Update the database
 
@@ -60,7 +62,7 @@ unchanged years:
 
 ``` r
 library(BioticExplorerServer)
-updateDatabase(dbPath = "~/IMR_biotic_BES_database")
+updateDatabase()
 ```
 
 `updateDatabase()` checks metadata for each API delivery and
@@ -72,9 +74,7 @@ place. To deliberately re-download particular years without running the
 metadata check, use:
 
 ``` r
-compileDatabase(years = 2024:2026,
-                dbPath = "~/IMR_biotic_BES_database",
-                overwrite = TRUE)
+compileDatabase(years = 2024:2026, overwrite = TRUE)
 ```
 
 ### Uninstall the database
@@ -109,8 +109,7 @@ invisible(lapply(packages, library, character.only = TRUE, quietly = TRUE))
 
 ``` r
 # Connect to the database (assuming you used standard dbPath and name)
-con_db <- "~/IMR_biotic_BES_database/bioticexplorer.duckdb" %>% 
-  normalizePath() %>% 
+con_db <- BioticExplorerServer::findDatabase() %>% 
   duckdb::duckdb(read_only = TRUE) %>% 
   DBI::dbConnect()
 

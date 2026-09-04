@@ -1,8 +1,8 @@
 #' @title Download IMR Biotic database and to place it into a \link[duckdb]{duckdb} database
 #' @description Downloads, formulates and indexes IMR Biotic database into a format used by BioticExplorer
 #' @param years Vector of integers specifying the years to be downloaded. The database reaches 1914:year(Sys.Date())
-#' @param dbPath Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved.
-#' @param dbIndexFile Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.
+#' @param dbPath Character string specifying the folder where the \link[duckdb]{duckdb} and \link[=indexDatabase]{dbIndex} files should be saved. Defaults to \code{\link{defaultDbPath}()}, which is \code{~/IMR_biotic_BES_database} on macOS and Linux and \code{\%USERPROFILE\%\\IMR_biotic_BES_database} on Windows, where R's \code{~} expansion may otherwise land the database in a OneDrive-synchronized Documents folder.
+#' @param dbIndexFile Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. Defaults to \code{dbIndex.rda} inside \code{dbPath}. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.
 #' @param dbName Character string or \code{NULL}. If \code{NULL} uses the default name ("bioticexplorer").
 #' @param overwrite Logical indicating whether requested years and reference tables already present in the \link[duckdb]{duckdb} database should be downloaded again and replaced. Existing annual rows are deleted transactionally before replacement, so they are not duplicated.
 #' @details Runs the \code{\link{prepareCruiseSeriesList}}, \code{\link{prepareGearList}}, \code{\link{prepareTaxaList}}, \code{\link{prepareReferenceCodes}}, \code{\link{downloadDatabase}} and \code{\link{indexDatabase}} functions, and saves the results into a \link[duckdb]{duckdb}. The cruise-series, gear and taxa reference lists are written as the \code{csindex}, \code{gearindex} and \code{taxaindex} tables, respectively, and coded \code{KeyType} fields exposed by the Reference API (such as \code{sex}, \code{maturationstage}, and \code{nation}) are written as the long-format \code{codeindex} table so they can be decoded offline with a join. Completed databases are stamped with the package and database-schema versions used to build them; \code{\link{updateDatabase}} uses this information to decide whether an incremental update is safe. Be aware that running these functions requires access to the IMR intranet and reasonably stable internet. It is advisable to run the function in a separate R session or in a screen session in the terminal on Unix machines, as downloading the database takes several hours and requires a stable internet connection. If the connection is unstable, the function may return an error. In such cases, ensure that the connection is stable and rerun the function. The function should continue downloading from where it left off.
@@ -16,7 +16,7 @@
 
 compileDatabase <- function(
   years = 1900:data.table::year(Sys.time()),
-  dbPath = "~/IMR_biotic_BES_database",
+  dbPath = defaultDbPath(),
   dbIndexFile = file.path(dbPath, "dbIndex.rda"),
   dbName = NULL,
   overwrite = FALSE
@@ -29,12 +29,23 @@ compileDatabase <- function(
     }
   }, add = TRUE)
 
+  ## Expand the paths before they are used
+
+  dbPath <- path.expand(dbPath)
+  dbIndexFile <- path.expand(dbIndexFile)
+
   ## Create the database folder if it does not exist
 
   if (!dir.exists(dbPath)) {
-    message(dbPath, " does not exist. Do you want to create the folder?")
+    ## utils::menu() cannot be answered in a background Rscript, which is how the
+    ## download is normally run. Create the folder without asking in that case.
 
-    ret.val <- utils::menu(c("Yes", "No"), "")
+    if (!interactive()) {
+      ret.val <- 1
+    } else {
+      message(dbPath, " does not exist. Do you want to create the folder?")
+      ret.val <- utils::menu(c("Yes", "No"), "")
+    }
 
     if (ret.val != 1) {
       msg <- paste0(
@@ -42,7 +53,7 @@ compileDatabase <- function(
       )
       stop(paste(strwrap(msg), collapse = "\n"))
     } else {
-      dir.create(dbPath)
+      dir.create(dbPath, recursive = TRUE)
       msg <- paste0("duckdb IMR database created to ", dbPath)
       message(paste(strwrap(msg), collapse = "\n"))
     }

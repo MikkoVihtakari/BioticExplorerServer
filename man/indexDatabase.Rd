@@ -6,14 +6,14 @@
 \usage{
 indexDatabase(
   connection,
-  dbIndexFile = "~/IMR_biotic_BES_database/dbIndex.rda",
+  dbIndexFile = file.path(defaultDbPath(), "dbIndex.rda"),
   fileOnly = TRUE
 )
 }
 \arguments{
 \item{connection}{Object defining the \link[duckdb]{duckdb} connection. Typically made within \code{\link{compileDatabase}}.}
 
-\item{dbIndexFile}{Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.}
+\item{dbIndexFile}{Character string specifying the file path where the index of the database should be saved. Must include \code{.rda} at the end. Defaults to \code{dbIndex.rda} inside \code{dbPath}. The index is used by \href{https://github.com/DeepWaterIMR/BioticExplorer}{BioticExplorer}.}
 
 \item{fileOnly}{Logical indicating whether the result should only be saved to a file and not returned. If FALSE, no file is made and the result is returned instead.}
 }

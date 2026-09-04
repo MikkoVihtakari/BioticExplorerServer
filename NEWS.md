@@ -1,4 +1,29 @@
-# BioticExplorerServer 0.8.6 (development version)
+# BioticExplorerServer 0.8.7 (development version)
+
+*2026-09-04*
+
+- Fixed the default database location on Windows
+  ([#8](https://github.com/DeepWaterIMR/BioticExplorerServer/issues/8)). R expands `~`
+  through the Documents special folder, which OneDrive's Known Folder Move commonly
+  redirects into a synchronized `OneDrive - <Organization>\Documents` folder. The
+  documented default `~/IMR_biotic_BES_database` therefore resolved to a different real
+  location than the `%USERPROFILE%\IMR_biotic_BES_database` convention documented by
+  BAIT, so a BAIT-installed database was invisible to BioticExplorer's auto-detection.
+- Added `defaultDbPath()`, which resolves the default database folder per platform:
+  `~/IMR_biotic_BES_database` on macOS and Linux, `%USERPROFILE%\IMR_biotic_BES_database`
+  on Windows. `compileDatabase()`, `updateDatabase()` and `indexDatabase()` now use it as
+  their default `dbPath`/`dbIndexFile`.
+- Added `dbPathCandidates()` and `findDatabase()` for locating a database that an earlier
+  version installed under the Documents folder on Windows. Downstream code such as
+  BioticExplorer can call `findDatabase()` instead of hard-coding `~`.
+- `compileDatabase()` now expands `dbPath` and `dbIndexFile` before use and creates the
+  database folder recursively.
+- `compileDatabase()` no longer asks `utils::menu()` whether to create a missing database
+  folder in non-interactive sessions. The prompt could not be answered in the background
+  Rscript job that BAIT uses to run the download on Windows, so the folder is now created
+  without asking there.
+
+# BioticExplorerServer 0.8.6
 
 *2026-08-31*
 

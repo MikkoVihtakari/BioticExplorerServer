@@ -1,4 +1,23 @@
-# BioticExplorerServer 0.8.7 (development version)
+# BioticExplorerServer 0.8.8 (development version)
+
+*2026-09-07*
+
+- Fixed the `stationtype` entry in the `codeindex` table. The Biotic column is called
+  `stationtype`, but the NMD Reference API publishes its code list as `fishstationtype`.
+  `prepareReferenceCodes()` requested a dataset literally named `stationtype`, which is a
+  different registry describing hydrography, acoustic and plankton station types (codes
+  1000–4420). `codeindex` therefore carried a lookup that decoded none of the values
+  actually stored in `stnall$stationtype` (`1`–`13`, `A`, `C`, `D`, `E`, `H`, `I`), and
+  silently invited wrong conclusions about which stations are representative.
+- `prepareReferenceCodes()` now accepts a *named* `tables` vector, where names are the
+  Biotic column written to `reftable` and values are the Reference API dataset to read.
+  This is how `stationtype` is mapped onto `fishstationtype`; unnamed elements keep using
+  the dataset name as the label, so existing calls are unaffected.
+- Note for existing databases: `codeindex` is rebuilt by every `updateDatabase()` run, so
+  the corrected lookup arrives with a routine update. The database schema is unchanged and
+  no rebuild is required.
+
+# BioticExplorerServer 0.8.7
 
 *2026-09-04*
 

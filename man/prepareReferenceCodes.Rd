@@ -7,12 +7,17 @@
 prepareReferenceCodes(tables = NULL, lang = c("en", "no"))
 }
 \arguments{
-\item{tables}{Character vector of reference-table names to pull. Defaults to the coded
+\item{tables}{Character vector of reference datasets to pull. Defaults to the coded
 \code{KeyType} columns that occur in \code{mission}/\code{stnall}/\code{indall}
-and are exposed as Reference API datasets.
-Note that a few Biotic columns map to a differently named reference dataset (e.g. the
-\code{gear} column resolves against the \code{equipment} table — handled separately by
-\code{\link{prepareGearList}} and therefore not included here).}
+and are exposed as Reference API datasets. The vector may be \emph{named}: names are
+the Biotic column (written to the \code{reftable} column so a join on the column name
+works), values are the Reference API dataset that defines the codes. Unnamed elements
+use the dataset name as the label.
+Note that a few Biotic columns map to a differently named reference dataset. The
+\code{stationtype} column resolves against the \code{fishstationtype} dataset and is
+handled here through that naming. The \code{gear} column resolves against the
+\code{equipment} table — handled separately by \code{\link{prepareGearList}} and
+therefore not included here.}
 
 \item{lang}{Language for \code{shortname}/\code{description}: \code{"en"} (default) or
 \code{"no"}.}

@@ -6,12 +6,17 @@
 #'   only resolvable against the API. The result is written to the DuckDB database as the
 #'   \code{codeindex} table by \code{\link{compileDatabase}}, so agents and the Shiny app can
 #'   decode these fields offline with a join instead of a per-code network call.
-#' @param tables Character vector of reference-table names to pull. Defaults to the coded
+#' @param tables Character vector of reference datasets to pull. Defaults to the coded
 #'   \code{KeyType} columns that occur in \code{mission}/\code{stnall}/\code{indall}
-#'   and are exposed as Reference API datasets.
-#'   Note that a few Biotic columns map to a differently named reference dataset (e.g. the
-#'   \code{gear} column resolves against the \code{equipment} table — handled separately by
-#'   \code{\link{prepareGearList}} and therefore not included here).
+#'   and are exposed as Reference API datasets. The vector may be \emph{named}: names are
+#'   the Biotic column (written to the \code{reftable} column so a join on the column name
+#'   works), values are the Reference API dataset that defines the codes. Unnamed elements
+#'   use the dataset name as the label.
+#'   Note that a few Biotic columns map to a differently named reference dataset. The
+#'   \code{stationtype} column resolves against the \code{fishstationtype} dataset and is
+#'   handled here through that naming. The \code{gear} column resolves against the
+#'   \code{equipment} table — handled separately by \code{\link{prepareGearList}} and
+#'   therefore not included here.
 #' @param lang Language for \code{shortname}/\code{description}: \code{"en"} (default) or
 #'   \code{"no"}.
 #' @details Reads each table from \code{.../reference/v2/dataset/\{table\}} (the same endpoint
@@ -32,23 +37,33 @@ prepareReferenceCodes <- function(tables = NULL, lang = c("en", "no")) {
 
   lang <- match.arg(lang)
 
-  # Default set of simple KeyType coded columns (column name == reference dataset name).
+  # Default set of simple KeyType coded columns. Unnamed elements are columns whose name
+  # matches the reference dataset; named elements map a Biotic column (the name) onto the
+  # differently named dataset that defines its codes (the value). `stationtype` is stored
+  # in Biotic under that column name, but the registry publishes it as `fishstationtype`.
   if (is.null(tables)) {
     tables <- c(
       "sex", "maturationstage", "nation",
       "samplequality", "gearcondition", "haulvalidity", "sampletype",
       "agingstructure", "lengthmeasurement", "lengthresolution", "fat",
       "digestion", "liver", "identification", "abundancecategory",
-      "stationtype", "samplerecipient"
+      stationtype = "fishstationtype", "samplerecipient"
     )
   }
+
+  # Label each dataset with the Biotic column name so `reftable` can be joined directly
+  # against the column being decoded.
+  labels <- names(tables)
+  if (is.null(labels)) labels <- rep("", length(tables))
+  labels[is.na(labels) | labels == ""] <- tables[is.na(labels) | labels == ""]
 
   pb <- utils::txtProgressBar(max = length(tables), style = 3)
 
   # Read one reference dataset and reduce it to code -> meaning rows
   readOne <- function(i) {
     utils::setTxtProgressBar(pb, i)
-    tab <- tables[i]
+    tab <- unname(tables[i])
+    label <- unname(labels[i])
 
     url <- sprintf(
       "%s/dataset/%s?version=2.0&lang=%s", .REFERENCE_API_BASE, tab, lang
@@ -74,7 +89,7 @@ prepareReferenceCodes <- function(tables = NULL, lang = c("en", "no")) {
 
     if (length(rows) == 0) return(NULL)
     out <- data.table::rbindlist(rows, fill = TRUE)
-    out[, reftable := tab]
+    out[, reftable := label]
     out[]
   }
 
